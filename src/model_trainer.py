@@ -38,9 +38,6 @@ class ModelTrainer:
         if model_type not in ['xgb', 'lgb']:
             print('Model not recognized.')
 
-        if list(trainset.columns) != list(testset.columns):
-            print('Dataset mismatch.')
-
     def train(self, pbounds=None):
         if self.model_type == 'xgb':
             if pbounds==None:
