@@ -3,14 +3,13 @@ import warnings
 import pandas as pd
 from unidecode import unidecode
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
 from utils.keys import data_keys
 
 warnings.filterwarnings(action='ignore')
 
 class DataPreprocessor:
     def __init__(self, train_data, test_data=None, target_col="PERF", columns_to_keep=None):
-        self.train_data = train_data
-        self.test_data = test_data
         self.target_col = target_col
 
         if columns_to_keep:
@@ -24,8 +23,12 @@ class DataPreprocessor:
         self.is_dev_data = test_data is not None
 
         if self.is_dev_data:
+            self.train_data = train_data.drop(columns=[target_col])
+            self.test_data = test_data.drop(columns=[target_col])
             self.train_y = train_data[target_col]
-            self.test_y = test_data[target_col]
+            self.Y_test = test_data[target_col]
+        else:
+            self.train_data = train_data
 
         if test_data is not None and (target_col not in train_data.columns or target_col not in test_data.columns):
             print('Check target column.')
@@ -67,7 +70,12 @@ class DataPreprocessor:
 
         X_test = self._process_data(self.test_data)
 
-        return [X_train, X_val, Y_train, Y_val], [X_test, self.test_y]
+        common_features = list(set(X_train.columns) & set(X_test.columns))
+        X_train = X_train[common_features]
+        X_val = X_val[common_features]
+        X_test = X_test[common_features]
+
+        return X_train, X_val, Y_train, Y_val, X_test, self.Y_test
 
     def prepare_scoring_data(self):
         self._check_column_matching()
@@ -85,7 +93,7 @@ if __name__ == "__main__":
     trainset = pd.read_csv('./data/sample_data_202211.csv')
     testset = pd.read_csv('./data/sample_data_202304.csv')
     dp = DataPreprocessor(trainset, testset)
-    [X_train, X_val, Y_train, Y_val], [X_test, test_y] = dp.process_data()
+    X_train, X_val, Y_train, Y_val, X_test, Y_test = dp.process_data()
 
     dp2 = DataPreprocessor(trainset.drop(columns=['PERF']))
     scoring_dataset = dp2.process_data()

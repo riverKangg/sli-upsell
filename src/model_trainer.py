@@ -3,25 +3,24 @@ import pickle
 import warnings
 import pandas as pd
 from datetime import datetime
-from unidecode import unidecode
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier, early_stopping
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import train_test_split
 
+from src.data_preprocessor import DataPreprocessor
 from utils.hyperparameters import get_xgb_hyperparameters, get_lgb_hyperparameters
 from src.model_optimizer import ModelOptimizer
 
 warnings.filterwarnings(action='ignore')
 
 class ModelTrainer:
-    def __init__(self, trainset, testset, model_type='xgb', col_lst=[]):
-        self.trainset = trainset
-        self.testset = testset
+    def __init__(self, X_train, X_val, Y_train, Y_val, X_test, Y_test, model_type='xgb'):
         if model_type not in ['xgb', 'lgb']:
             raise ValueError("Invalid model_type. Please use 'xgb' or 'lgb'.")
         self.model_type = model_type
-        self.col_lst = list(set(col_lst))
+
+        self.X_train, self.X_val, self.Y_train, self.Y_val = X_train, X_val, Y_train, Y_val
+        self.X_test, self.Y_test = X_test, Y_test
 
         dt = datetime.now().strftime('%y%m%d_%H%M')
         save_name = f'{model_type}_{dt}'
@@ -36,60 +35,13 @@ class ModelTrainer:
         self.path_results = f'{result_path}/results.csv'
         self.model_name = save_name
 
-        self.col_version = 'none'
-        check_cols = list(filter(lambda x: x not in trainset.columns, col_lst))
-        if col_lst and not check_cols:
-            self.col_version = 'before_dummy'
-        elif col_lst and check_cols:
-            self.col_version = 'after_dummy'
-
         if model_type not in ['xgb', 'lgb']:
             print('Model not recognized.')
 
         if list(trainset.columns) != list(testset.columns):
             print('Dataset mismatch.')
 
-    def make_input(self):
-        if self.col_version == 'before_dummy':
-            up_dt = self.trainset[self.col_lst]
-            up_test = self.testset[self.col_lst]
-        else:
-            up_dt = self.trainset
-            up_test = self.testset
-
-        drop_cols = ['마감년월', '계약자고객ID', '계약자주민등록번호암호화']
-        up_dt = up_dt.drop(columns=drop_cols)
-        up_test = up_test.drop(columns=drop_cols)
-
-        null_cols = up_dt.columns[up_dt.isnull().any()].tolist()
-        if null_cols:
-            print(up_dt[null_cols].isnull().sum())
-            up_dt = up_dt.fillna(0)
-            up_test = up_test.fillna(0)
-
-        up_dt2 = pd.get_dummies(up_dt)
-        up_test2 = pd.get_dummies(up_test)
-
-        for col in up_dt2.columns:
-            if any(ord(c) > 127 for c in col):
-                new_col = unidecode(col)
-                up_dt2 = up_dt2.rename(columns={col: new_col})
-                up_test2 = up_test2.rename(columns={col: new_col})
-
-        if self.col_version == 'after_dummy':
-            self.col_lst += ['PERF']
-            up_dt2 = up_dt2[self.col_lst]
-            up_test2 = up_test2[self.col_lst]
-
-        x_dev = up_dt2.drop(columns=['PERF'])
-        y_dev = up_dt2['PERF']
-        self.X_train, self.X_val, self.Y_train, self.Y_val = train_test_split(x_dev, y_dev, test_size=0.3, random_state=42)
-
-        self.X_test = up_test2.drop(columns=['PERF'])
-        self.y_test = up_test2['PERF']
-
     def train(self, pbounds=None):
-        self.make_input()
         if self.model_type == 'xgb':
             if pbounds==None:
                 pbounds = get_xgb_hyperparameters()
@@ -128,7 +80,7 @@ class ModelTrainer:
         with open(self.path_model, "wb") as f:
             pickle.dump(model, f)
 
-        roc_score = roc_auc_score(self.y_test, model.predict_proba(self.X_test)[:, 1], average='macro')
+        roc_score = roc_auc_score(self.Y_test, model.predict_proba(self.X_test)[:, 1], average='macro')
         print(f'Test ROC \t {roc_score:.4f}')
 
         results_df = pd.DataFrame({
@@ -145,5 +97,7 @@ class ModelTrainer:
 if __name__ == "__main__":
     trainset = pd.read_csv('../data/sample_data_202211.csv')
     testset = pd.read_csv('../data/sample_data_202304.csv')
-    model_trainer = ModelTrainer(trainset, testset, model_type='xgb')
+    dp = DataPreprocessor(trainset, testset)
+    X_train, X_val, Y_train, Y_val, X_test, Y_test = dp.process_data()
+    model_trainer = ModelTrainer(X_train, X_val, Y_train, Y_val, X_test, Y_test , model_type='xgb')
     model_trainer.train()
