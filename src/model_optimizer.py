@@ -35,13 +35,11 @@ class ModelOptimizer:
             return auc_score
 
         optimizer = BayesianOptimization(f=objective, pbounds=self.pbounds, verbose=0, random_state=1)
-        optimizer.maximize(init_points=5, n_iter=self.n_iter, verbose=0,
+        optimizer.maximize(init_points=5, n_iter=self.n_iter,
                            acquisition_function=UtilityFunction(kind='ei', xi=0.00))
 
         best_params = convert_params_to_int(optimizer.max['params'])
         best_score = optimizer.max['target']
-        print("Best Hyperparameters:")
-        for k, v in best_params.items():
-            print(f"{k}: {v:.2f}")
+
         print(f"Validation AUC: {best_score:.4f}")
         return best_score, best_params
