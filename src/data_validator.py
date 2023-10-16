@@ -8,7 +8,7 @@ class DataValidator:
         self.df = df
 
     def are_columns_included(self):
-        missing_columns = list(filter(lambda column: column not in df.columns, data_keys))
+        missing_columns = list(filter(lambda column: column not in self.df.columns, data_keys))
         return len(missing_columns) == 0
 
     def check_for_null(self, col_list):
@@ -28,7 +28,7 @@ class DataValidator:
             return False, "키값에 NULL이 포함되어 있습니다."
         if self.is_duplicate(self.df['계약자고객ID']):
             return False, "계약자고객ID에 중복이 있습니다."
-        if 'PERF' in df.columns:
+        if 'PERF' in self.df.columns:
             if not self.check_for_null(['PERF']):
                 return False, "타겟에 NULL이 포함되어 있습니다."
 
