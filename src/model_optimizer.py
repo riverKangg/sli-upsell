@@ -35,7 +35,7 @@ class ModelOptimizer:
             auc_score = roc_auc_score(self.val_y, y_pred, average='macro')
             return auc_score
 
-        optimizer = BayesianOptimization(f=objective, pbounds=self.pbounds, verbose=2, random_state=1)
+        optimizer = BayesianOptimization(f=objective, pbounds=self.pbounds, verbose=0, random_state=1)
         optimizer.maximize(init_points=5, n_iter=self.n_iter, acquisition_function=UtilityFunction(kind='ei', xi=0.00))
 
         best_params = convert_params_to_int(optimizer.max['params'])

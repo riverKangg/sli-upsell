@@ -86,7 +86,7 @@ class ModelTrainer:
             'Validation ROC': [best_score],
             'Test ROC': [roc_score]
         })
-
+        print(self.model_name, roc_score)
         if os.path.exists(self.path_results):
             results_df.to_csv(self.path_results, mode='a', header=False, index=False)
         else:
