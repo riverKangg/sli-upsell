@@ -21,7 +21,6 @@ class ModelOptimizer:
         def objective(**params):
             params = convert_params_to_int(params)
             if self.model_type == 'xgb':
-                print(params)
                 clf = XGBClassifier(eval_metric='logloss', n_jobs=-1, random_state=50, **params)
                 clf.fit(self.tr_x, self.tr_y, eval_set=[(self.val_x, self.val_y)],
                         early_stopping_rounds=10, verbose=0)
@@ -36,7 +35,8 @@ class ModelOptimizer:
             return auc_score
 
         optimizer = BayesianOptimization(f=objective, pbounds=self.pbounds, verbose=0, random_state=1)
-        optimizer.maximize(init_points=5, n_iter=self.n_iter, acquisition_function=UtilityFunction(kind='ei', xi=0.00))
+        optimizer.maximize(init_points=5, n_iter=self.n_iter, verbose=0,
+                           acquisition_function=UtilityFunction(kind='ei', xi=0.00))
 
         best_params = convert_params_to_int(optimizer.max['params'])
         best_score = optimizer.max['target']
