@@ -6,7 +6,7 @@ import pandas as pd
 class DataValidator:
     def __init__(self, df):
         self.df = df
-        self.required_columns = ['마감년월', '계약자고객ID', '주민등록번호암호화']
+        self.required_columns = ['마감년월', '계약자고객ID', '계약자주민등록번호암호화']
 
     def are_columns_included(self):
         missing_columns = list(filter(lambda column: column not in df.columns, self.required_columns))

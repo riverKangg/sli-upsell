@@ -25,7 +25,7 @@ class DataGenerator:
         data = {
             '마감년월': self.yyyymm,
             '계약자고객ID': contract_ids,
-            '주민등록번호암호화': encryption,
+            '계약자주민등록번호암호화': encryption,
         }
 
         self.df = pd.DataFrame(data)
