@@ -89,12 +89,13 @@ class ModelTrainer:
         if self.model_name == 'xgb':
             if pbounds==None:
                 pbounds = get_xgb_hyperparameters()
-            optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val, model_type='xgb',
-                                       pbounds=pbounds)
+            optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val,
+                                       model_type='xgb', pbounds=pbounds)
         elif self.model_name == 'lgb':
             if pbounds==None:
                 pbounds = get_lgb_hyperparameters()
-            optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val, model_type='lgb')
+            optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val,
+                                       model_type='lgb', pbounds=pbounds)
 
         best_params = optimizer.optimize()
 

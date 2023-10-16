@@ -3,6 +3,7 @@ from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from sklearn.metrics import roc_auc_score
 from bayes_opt import BayesianOptimization, UtilityFunction
+from utills.hyperparameters import convert_params_to_int
 
 warnings.filterwarnings(action='ignore')
 
@@ -18,7 +19,9 @@ class ModelOptimizer:
 
     def optimize(self):
         def objective(**params):
+            params = convert_params_to_int(params)
             if self.model_type == 'xgb':
+                print(params)
                 clf = XGBClassifier(eval_metric='logloss', n_jobs=-1, random_state=50, **params)
             else:
                 clf = LGBMClassifier(boosting_type='goss', eval_metric='logloss', n_jobs=-1, random_state=50, **params)
@@ -31,7 +34,7 @@ class ModelOptimizer:
         optimizer = BayesianOptimization(f=objective, pbounds=self.pbounds, verbose=2, random_state=1)
         optimizer.maximize(init_points=5, n_iter=self.n_iter, acquisition_function=UtilityFunction(kind='ei', xi=0.00))
 
-        best_params = optimizer.max['params']
+        best_params = convert_params_to_int(optimizer.max['params'])
         best_score = optimizer.max['target']
         print("\n".join(f"{k}\t{v:.2f}" for k, v in best_params.items()))
         print(f"\nValidation AUC \t {best_score:.4f}")
