@@ -41,11 +41,12 @@ class DataGenerator:
         titanic_df = self.load_titanic_data()
         self.df = self.df.join(titanic_df)
 
-    def save_data_to_csv(self, filename):
+    def save_data_to_csv(self, filepath='../data/'):
+        filename = f'{filepath}/sample_data_{self.yyyymm}.csv'
         self.df.to_csv(filename, index=False)
 
 if __name__ == "__main__":
     data_generator = DataGenerator(num_samples=10000, yyyymm='202304')
     data_generator.generate_sample_data()
     data_generator.join_titanic_data()
-    data_generator.save_data_to_csv('../data/sample_data.csv')
+    data_generator.save_data_to_csv()
