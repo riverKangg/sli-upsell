@@ -31,7 +31,7 @@ class DataGenerator:
 
     def load_titanic_data(self):
         titanic_df = sns.load_dataset('titanic')
-        titanic_df = titanic_df.rename(columns={'survived': 'PERF'})
+        titanic_df = titanic_df.rename(columns={'survived': 'PERF'}).drop(columns=['alive'])
         titanic_df = titanic_df.sample(frac=1).reset_index(drop=True)
         titanic_df = titanic_df.iloc[:self.num_samples]
         return titanic_df
@@ -45,7 +45,7 @@ class DataGenerator:
         self.df.to_csv(filename, index=False)
 
 if __name__ == "__main__":
-    data_generator = DataGenerator(num_samples=500, yyyymm='202211')
+    data_generator = DataGenerator(num_samples=500, yyyymm='202304')
     data_generator.generate_sample_data()
     data_generator.join_titanic_data()
     data_generator.save_data_to_csv()
