@@ -4,50 +4,48 @@ import random
 import string
 import seaborn as sns
 
-# 샘플 데이터 생성
-num_samples = 1000  # 생성할 샘플 수
+class DataGenerator:
+    def __init__(self, num_samples=1000, yyyymm='202304'):
+        self.num_samples = num_samples
+        self.yyyymm = yyyymm
+        self.df = None
 
-# '마감년월' 생성 (날짜 형식)
-yyyymm = '202304'
+    def generate_sample_data(self):
+        # '계약자고객ID' 생성 (고유한 숫자)
+        contract_ids = list(range(1, self.num_samples + 1))
 
-# '계약자고객ID' 생성 (고유한 숫자)
-contract_ids = list(range(1, num_samples + 1))
+        # '주민등록번호암호화' 생성 (임의의 문자열)
+        def random_string(length):
+            letters = string.ascii_letters + string.digits
+            return ''.join(random.choice(letters) for _ in range(length))
 
-# '주민등록번호암호화' 생성 (임의의 문자열)
-def random_string(length):
-    letters = string.ascii_letters + string.digits
-    return ''.join(random.choice(letters) for _ in range(length))
+        encryption = [random_string(10) for _ in range(self.num_samples)]
 
-encryption = [random_string(10) for _ in range(num_samples)]
+        # 데이터프레임 생성
+        data = {
+            '마감년월': self.yyyymm,
+            '계약자고객ID': contract_ids,
+            '주민등록번호암호화': encryption,
+        }
 
-#
-perf = np.random.randint(0, 1, size=num_samples)
+        self.df = pd.DataFrame(data)
 
-# 데이터프레임 생성
-data = {
-    '마감년월': yyyymm,
-    '계약자고객ID': contract_ids,
-    '주민등록번호암호화': encryption,
-    'PERF' : perf
-}
+    def load_titanic_data(self):
+        titanic_df = sns.load_dataset('titanic')
+        titanic_df = titanic_df.rename(columns={'survived': 'PERF'})
+        titanic_df = titanic_df.sample(frac=1).reset_index(drop=True)
+        titanic_df = titanic_df.iloc[:self.num_samples]
+        return titanic_df
 
-df = pd.DataFrame(data)
+    def join_titanic_data(self):
+        titanic_df = self.load_titanic_data()
+        self.df = self.df.join(titanic_df)
 
-sample = sns.load_dataset('titanic')
-sample.rename(columns={'survived':'PERF'})
-sample = sample.iloc[:num_samples]
+    def save_data_to_csv(self, filename):
+        self.df.to_csv(filename, index=False)
 
-df = df.join(sample)
-# # 숫자형 컬럼 추가
-# df['숫자형컬럼'] = np.random.randint(1, 100, size=num_samples)
-#
-# # 범주형 컬럼 추가
-# categories = ['카테고리A', '카테고리B', '카테고리C']
-# df['범주형컬럼'] = [random.choice(categories) for _ in range(num_samples)]
-#
-# # 문자형 컬럼 추가
-# strings = [random_string(8) for _ in range(num_samples)]
-# df['문자형컬럼'] = strings
-
-# CSV 파일로 저장
-df.to_csv('../data/sample_data.csv', index=False)
+if __name__ == "__main__":
+    data_generator = DataGenerator(num_samples=10000, yyyymm='202304')
+    data_generator.generate_sample_data()
+    data_generator.join_titanic_data()
+    data_generator.save_data_to_csv('../data/sample_data.csv')
