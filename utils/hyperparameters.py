@@ -26,7 +26,7 @@ def get_lgb_hyperparameters():
     }
     return lgb_params
 def convert_params_to_int(params_dict):
-    int_params = ['max_depth', 'n_estimators']
+    int_params = ['max_depth', 'n_estimators', 'num_leaves', 'min_child_samples']
     for param_name in int_params:
         if param_name in params_dict:
             params_dict[param_name] = int(params_dict[param_name])

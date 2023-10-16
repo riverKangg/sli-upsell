@@ -1,9 +1,9 @@
 import warnings
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
+from lightgbm import LGBMClassifier, early_stopping
 from sklearn.metrics import roc_auc_score
 from bayes_opt import BayesianOptimization, UtilityFunction
-from utills.hyperparameters import convert_params_to_int
+from utils.hyperparameters import convert_params_to_int
 
 warnings.filterwarnings(action='ignore')
 
@@ -23,10 +23,14 @@ class ModelOptimizer:
             if self.model_type == 'xgb':
                 print(params)
                 clf = XGBClassifier(eval_metric='logloss', n_jobs=-1, random_state=50, **params)
+                clf.fit(self.tr_x, self.tr_y, eval_set=[(self.val_x, self.val_y)],
+                        early_stopping_rounds=10, verbose=0)
             else:
-                clf = LGBMClassifier(boosting_type='goss', eval_metric='logloss', n_jobs=-1, random_state=50, **params)
+                clf = LGBMClassifier(boosting_type='goss', eval_metric='logloss', n_jobs=-1, random_state=50,
+                                    **params)
+                clf.fit(self.tr_x, self.tr_y, eval_set=[(self.val_x, self.val_y)],
+                        callbacks=[early_stopping(10, verbose=False)])
 
-            clf.fit(self.tr_x, self.tr_y, eval_set=[(self.val_x, self.val_y)], early_stopping_rounds=100, verbose=0)
             y_pred = clf.predict_proba(self.val_x)[:, 1]
             auc_score = roc_auc_score(self.val_y, y_pred, average='macro')
             return auc_score
@@ -36,6 +40,8 @@ class ModelOptimizer:
 
         best_params = convert_params_to_int(optimizer.max['params'])
         best_score = optimizer.max['target']
-        print("\n".join(f"{k}\t{v:.2f}" for k, v in best_params.items()))
-        print(f"\nValidation AUC \t {best_score:.4f}")
-        return best_params
+        print("Best Hyperparameters:")
+        for k, v in best_params.items():
+            print(f"{k}: {v:.2f}")
+        print(f"Validation AUC: {best_score:.4f}")
+        return best_score, best_params

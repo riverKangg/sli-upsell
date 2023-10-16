@@ -5,32 +5,36 @@ import pandas as pd
 from datetime import datetime
 from unidecode import unidecode
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
+from lightgbm import LGBMClassifier, early_stopping
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-from utills.hyperparameters import get_xgb_hyperparameters, get_lgb_hyperparameters
+from utils.hyperparameters import get_xgb_hyperparameters, get_lgb_hyperparameters
 from src.model_optimizer import ModelOptimizer
 
 warnings.filterwarnings(action='ignore')
 
 class ModelTrainer:
-    def __init__(self, trainset, testset, model_name='', col_lst=[]):
+    def __init__(self, trainset, testset, model_type='xgb', col_lst=[]):
         self.trainset = trainset
         self.testset = testset
-        self.model_name = model_name
+        if model_type not in ['xgb', 'lgb']:
+            raise ValueError("Invalid model_type. Please use 'xgb' or 'lgb'.")
+        self.model_type = model_type
         self.col_lst = list(set(col_lst))
 
-        if model_name == '':
-            model_name = datetime.now().strftime('%Y%m%d_%H%M%S')
-        print(f'Model Version\t {model_name}\n')
+        dt = datetime.now().strftime('%y%m%d_%H%M')
+        save_name = f'{model_type}_{dt}'
+        print(f'Model Version\t {save_name}\n')
 
         result_path = './result/model'
         if not os.path.exists(result_path):
             os.makedirs(result_path)
-        self.path_bparams = f'{result_path}/{model_name}_bparams.xlsx'
-        self.path_model = f"{result_path}/{model_name}.pkl"
-        self.path_importance = f'{result_path}/{model_name}_importance.xlsx'
+        self.path_bparams = f'{result_path}/{save_name}_bparams.csv'
+        self.path_model = f"{result_path}/{save_name}.pkl"
+        self.path_importance = f'{result_path}/{save_name}_importance.csv'
+        self.path_results = f'{result_path}/results.csv'
+        self.model_name = save_name
 
         self.col_version = 'none'
         check_cols = list(filter(lambda x: x not in trainset.columns, col_lst))
@@ -39,7 +43,7 @@ class ModelTrainer:
         elif col_lst and check_cols:
             self.col_version = 'after_dummy'
 
-        if model_name not in ['xgb', 'lgb']:
+        if model_type not in ['xgb', 'lgb']:
             print('Model not recognized.')
 
         if list(trainset.columns) != list(testset.columns):
@@ -86,44 +90,60 @@ class ModelTrainer:
 
     def train(self, pbounds=None):
         self.make_input()
-        if self.model_name == 'xgb':
+        if self.model_type == 'xgb':
             if pbounds==None:
                 pbounds = get_xgb_hyperparameters()
             optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val,
                                        model_type='xgb', pbounds=pbounds)
-        elif self.model_name == 'lgb':
+        elif self.model_type == 'lgb':
             if pbounds==None:
                 pbounds = get_lgb_hyperparameters()
             optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val,
                                        model_type='lgb', pbounds=pbounds)
 
-        best_params = optimizer.optimize()
+        best_score, best_params = optimizer.optimize()
 
-        if self.model_name == 'xgb':
+        if self.model_type == 'xgb':
             model = XGBClassifier(random_state=50, **best_params)
-        elif self.model_name == 'lgb':
+            model.fit(self.X_train, self.Y_train, eval_metric='auc', eval_set=[(self.X_val, self.Y_val)],
+                      early_stopping_rounds=10, verbose=0)
+        elif self.model_type == 'lgb':
             model = LGBMClassifier(random_state=50, **best_params)
+            model.fit(self.X_train, self.Y_train, eval_metric='auc', eval_set=[(self.X_val, self.Y_val)],
+                      callbacks=[early_stopping(10, verbose=False)])
 
-        model.fit(self.X_train, self.Y_train, eval_metric='auc', eval_set=[(self.X_val, self.Y_val)], early_stopping_rounds=100, verbose=0)
 
         importance_df = pd.DataFrame()
         importance_df['VAR'] = self.X_train.columns
-        if self.model_name == 'xgb':
+        if self.model_type == 'xgb':
             importance_df['importance'] = model.feature_importances_
-        elif self.model_name == 'lgb':
+        elif self.model_type == 'lgb':
             importance_df['split'] = model.feature_importances_
             importance_df['gain'] = model.booster_.feature_importance(importance_type='gain')
 
-        writer1 = pd.ExcelWriter(self.path_bparams, engine='xlsxwriter')
-        pd.DataFrame.from_dict(best_params, orient='index').to_excel(writer1, index=False, encoding='utf-8-sig')
-        writer1.save()
-
-        writer2 = pd.ExcelWriter(self.path_importance, engine='xlsxwriter')
-        importance_df.to_excel(writer2, index=False, encoding='utf-8-sig')
-        writer2.save()
+        best_params_df = pd.DataFrame.from_dict(best_params, orient='index')
+        best_params_df.to_csv(self.path_bparams)
+        importance_df.to_csv(self.path_importance, index=False)
 
         with open(self.path_model, "wb") as f:
             pickle.dump(model, f)
 
         roc_score = roc_auc_score(self.y_test, model.predict_proba(self.X_test)[:, 1], average='macro')
         print(f'Test ROC \t {roc_score:.4f}')
+
+        results_df = pd.DataFrame({
+            'Model': [self.model_name],
+            'Validation ROC': [best_score],
+            'Test ROC': [roc_score]
+        })
+
+        if os.path.exists(self.path_results):
+            results_df.to_csv(self.path_results, mode='a', header=False, index=False)
+        else:
+            results_df.to_csv(self.path_results, index=False)
+
+if __name__ == "__main__":
+    trainset = pd.read_csv('../data/sample_data_202211.csv')
+    testset = pd.read_csv('../data/sample_data_202304.csv')
+    model_trainer = ModelTrainer(trainset, testset, model_type='xgb')
+    model_trainer.train()
