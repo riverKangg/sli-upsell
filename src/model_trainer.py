@@ -68,7 +68,8 @@ class ModelTrainer:
             importance_df['importance'] = model.feature_importances_
         elif self.model_type == 'lgb':
             importance_df['split'] = model.feature_importances_
-            importance_df['gain'] = model.booster_.feature_importance(importance_type='gain')
+            importance_df['importance'] = model.booster_.feature_importance(importance_type='gain')
+        importance_df.sort_values(by='importance', ascending=False, inplace=True)
 
         best_params_df = pd.DataFrame.from_dict(best_params, orient='index')
         best_params_df.to_csv(self.path_bparams)
