@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import random
 import string
 import seaborn as sns
@@ -46,7 +45,7 @@ class DataGenerator:
         self.df.to_csv(filename, index=False)
 
 if __name__ == "__main__":
-    data_generator = DataGenerator(num_samples=10000, yyyymm='202304')
+    data_generator = DataGenerator(num_samples=500, yyyymm='202211')
     data_generator.generate_sample_data()
     data_generator.join_titanic_data()
     data_generator.save_data_to_csv()
