@@ -9,7 +9,8 @@ from lightgbm import LGBMClassifier
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-from model_optimizer import ModelOptimizer
+from utills.hyperparameters import get_xgb_hyperparameters, get_lgb_hyperparameters
+from src.model_optimizer import ModelOptimizer
 
 warnings.filterwarnings(action='ignore')
 
@@ -83,11 +84,16 @@ class ModelTrainer:
         self.X_test = up_test2.drop(columns=['PERF'])
         self.y_test = up_test2['PERF']
 
-    def train(self):
+    def train(self, pbounds=None):
         self.make_input()
         if self.model_name == 'xgb':
-            optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val, model_type='xgb')
+            if pbounds==None:
+                pbounds = get_xgb_hyperparameters()
+            optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val, model_type='xgb',
+                                       pbounds=pbounds)
         elif self.model_name == 'lgb':
+            if pbounds==None:
+                pbounds = get_lgb_hyperparameters()
             optimizer = ModelOptimizer(self.X_train, self.X_val, self.Y_train, self.Y_val, model_type='lgb')
 
         best_params = optimizer.optimize()
@@ -120,9 +126,3 @@ class ModelTrainer:
 
         roc_score = roc_auc_score(self.y_test, model.predict_proba(self.X_test)[:, 1], average='macro')
         print(f'Test ROC \t {roc_score:.4f}')
-
-# Example usage
-trainset = pd.DataFrame()  # Replace with your actual trainset
-testset = pd.DataFrame()   # Replace with your actual testset
-model_trainer = ModelTrainer(trainset, testset, model_name='xgb', col_lst=['col1', 'col2', 'col3'])
-model_trainer.train()

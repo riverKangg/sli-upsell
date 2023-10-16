@@ -7,7 +7,7 @@ from bayes_opt import BayesianOptimization, UtilityFunction
 warnings.filterwarnings(action='ignore')
 
 class ModelOptimizer:
-    def __init__(self, tr_x, val_x, tr_y, val_y, pbounds, n_iter, model_type):
+    def __init__(self, tr_x, val_x, tr_y, val_y, pbounds, model_type, n_iter=50):
         self.tr_x = tr_x
         self.tr_y = tr_y
         self.val_x = val_x
