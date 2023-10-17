@@ -56,6 +56,10 @@ python model_development_pipeline.py
 
 - `model_evaluator.py`: 모델 평가를 수행하는 모듈로, ROC AUC, PSI 등의 모델 성능 메트릭을 계산한다.
 
+- `score_calculator.py` : 최종 모델을 사용하여 스코어를 산출하고, 등급화하여 저장한다.
+
+- `variable_iv_psi_calculator.py` : 변수를 구간화하고, IV와 PSI값을 산출하고 저장한다.
+
 ## 결과 확인
 
 모든 중간 및 최종 결과물은 `output` 폴더에 저장됩니다. 학습된 모델, 모델 평가 결과 및 중간 데이터를 확인할 수 있다.
