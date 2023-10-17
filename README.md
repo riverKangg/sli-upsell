@@ -49,16 +49,16 @@ python model_development_pipeline.py
 프로젝트의 각 모듈에 대한 간략한 설명은 다음과 같다:
 
 - `data_validator.py`: 데이터 유효성 검사를 수행하는 모듈로, 데이터의 누락, 중복, NULL 값 등을 확인한다.
-
 - `data_preprocessor.py`: 데이터 전처리를 수행하는 모듈로, 데이터 정리, 원-핫 인코딩, 결측치 처리 등을 수행한다.
-
 - `model_trainer.py`: 모델 학습을 수행하는 모듈로, XGBoost 또는 LightGBM과 같은 모델을 학습한다.
-
 - `model_evaluator.py`: 모델 평가를 수행하는 모듈로, ROC AUC, PSI 등의 모델 성능 메트릭을 계산한다.
-
 - `score_calculator.py` : 최종 모델을 사용하여 스코어를 산출하고, 등급화하여 저장한다.
-
 - `variable_iv_psi_calculator.py` : 변수를 구간화하고, IV와 PSI값을 산출하고 저장한다.
+
+## Utils
+- `utils/paths.py`: 데이터 및 모델 경로를 정의하는 모듈.
+- `utils/keys.py`: 데이터 프레임의 열 키를 정의하는 모듈.
+- `utils/hyperparameters.py`: 베이지안 최적화에 사용할 파라미터를 정의하는 모듈.
 
 ## 결과 확인
 
