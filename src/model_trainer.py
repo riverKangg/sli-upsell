@@ -32,7 +32,7 @@ class ModelTrainer:
         self.path_bparams = f'{model_path}/{save_name}_bparams.csv'
         self.path_model = f"{model_path}/{save_name}.pkl"
         self.path_importance = f'{model_path}/{save_name}_importance.csv'
-        self.path_results = f'{model_path}/results.csv'
+        self.path_results = f'{model_path}/MODEL_RESULTS.csv'
         self.model_name = save_name
 
         if model_type not in ['xgb', 'lgb']:
@@ -69,7 +69,6 @@ class ModelTrainer:
         elif self.model_type == 'lgb':
             importance_df['split'] = model.feature_importances_
             importance_df['importance'] = model.booster_.feature_importance(importance_type='gain')
-        importance_df.sort_values(by='importance', ascending=False, inplace=True)
 
         best_params_df = pd.DataFrame.from_dict(best_params, orient='index')
         best_params_df.to_csv(self.path_bparams)

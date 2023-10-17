@@ -44,7 +44,7 @@ class DataValidator:
             return False, "계약자고객ID에 중복이 있습니다."
         if self.are_columns_included(['PERF']):
             return False, "PERF 삭제 필요합니다."
-        return True, "데이터가 유효합니다."
+        return True, f"{self.df}: 데이터가 유효합니다."
 
 
 # 모듈을 다른 스크립트에서 사용할 수 있도록 테스트 코드를 작성합니다.
