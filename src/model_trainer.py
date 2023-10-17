@@ -22,9 +22,9 @@ class ModelTrainer:
         self.X_train, self.X_val, self.Y_train, self.Y_val = X_train, X_val, Y_train, Y_val
         self.X_test, self.Y_test = X_test, Y_test
 
-        dt = datetime.now().strftime('%y%m%d_%H%M')
+        dt = datetime.now().strftime('%y%m%d_%H%M%S')
         save_name = f'{model_type}_{dt}'
-        print(f'Model Version\t {save_name}\n')
+        print(f'Model Version\t {save_name}')
 
         result_path = './result/model'
         if not os.path.exists(result_path):
@@ -83,10 +83,11 @@ class ModelTrainer:
 
         results_df = pd.DataFrame({
             'Model': [self.model_name],
+            'NumOfCols': [self.X_train.shape[1]]
             'Validation ROC': [best_score],
             'Test ROC': [roc_score]
         })
-        print(f'{self.model_name}: {roc_score:.4f}')
+
         if os.path.exists(self.path_results):
             results_df.to_csv(self.path_results, mode='a', header=False, index=False)
         else:
