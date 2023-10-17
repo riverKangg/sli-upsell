@@ -47,7 +47,7 @@ class DataGenerator:
 
     def save_scoring_data_to_csv(self, filepath=data_path):
         self.df = self.df.drop(columns=['PERF'])
-        filename = f'{filepath}/score_data_{self.yyyymm}.csv'
+        filename = f'{filepath}/sample_score_data_{self.yyyymm}.csv'
         self.df.to_csv(filename, index=False)
 
 
