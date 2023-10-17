@@ -25,7 +25,7 @@ class ModelTrainer:
 
         dt = datetime.now().strftime('%y%m%d_%H%M%S')
         save_name = f'{model_type}_{dt}'
-        print(f'Model Version\t {save_name}')
+        print(f'\nModel Version\t {save_name}')
 
         if not os.path.exists(model_path):
             os.makedirs(model_path)
