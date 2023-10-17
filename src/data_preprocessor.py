@@ -9,7 +9,7 @@ from utils.keys import data_keys
 warnings.filterwarnings(action='ignore')
 
 class DataPreprocessor:
-    def __init__(self, train_data, test_data=None, target_col="PERF", columns_to_keep=None):
+    def __init__(self, train_data, test_data=None, columns_to_keep=None, target_col="PERF"):
         """
         Initialize the DataPreprocessor.
 
@@ -62,7 +62,7 @@ class DataPreprocessor:
         :param data: The input data as a DataFrame.
         :return: Processed data as a DataFrame.
         """
-        data = data.loc[:, self.columns_to_keep] if self.columns_to_keep and self.before_dum else data
+        data = data[self.columns_to_keep] if self.columns_to_keep and self.before_dum else data
         data = data.drop(columns=data_keys)
         data = data.fillna(0)
 
@@ -73,7 +73,7 @@ class DataPreprocessor:
                 new_col = unidecode(col)
                 data = data.rename(columns={col: new_col})
 
-        data = data.loc[:, self.columns_to_keep] if self.columns_to_keep and not self.before_dum else data
+        data = data[self.columns_to_keep] if self.columns_to_keep and not self.before_dum else data
 
         return data
 
