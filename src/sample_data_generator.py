@@ -45,6 +45,7 @@ class DataGenerator:
         """
         titanic_df = sns.load_dataset('titanic')
         titanic_df = titanic_df.rename(columns={'survived': 'PERF'}).drop(columns=['alive'])
+        titanic_df = titanic_df[titanic_df.age>0]
         titanic_df = titanic_df.sample(frac=1).reset_index(drop=True)
         titanic_df = titanic_df.iloc[:self.num_samples]
         return titanic_df

@@ -3,11 +3,12 @@ import glob
 import pandas as pd
 
 from utils.paths import *
-from src.data_validator import DataValidator
-from src.data_preprocessor import DataPreprocessor
 from src.model_trainer import ModelTrainer
-from src.score_calculator import ScoreCalculator
+from src.data_validator import DataValidator
 from src.model_evaluator import ModelEvaluator
+from src.score_calculator import ScoreCalculator
+from src.data_preprocessor import DataPreprocessor
+from src.variable_iv_psi_calculator import VariableIvPsi, DataBinningSummary
 
 # Step 1: Load and check the dataset
 train_data = pd.read_csv(f'{data_path}/sample_data_202211.csv')
@@ -24,6 +25,16 @@ data_processor = DataPreprocessor(train_data, test_data)
 X_train, X_val, Y_train, Y_val, X_test, Y_test = data_processor.process_data()
 
 # Step 3: Filtering by IV and PSI
+binning_summary = DataBinningSummary(train_data, test_data)
+
+binning_summary.make_categorical_binning_summary()
+binning_summary.make_numerical_binning_summary()
+binning_summary.make_total_binning_summary()
+
+variable_iv_psi = VariableIvPsi(train_data, test_data, binning_summary.binning_summary_all_time)
+variable_iv_psi.calculate_variable_iv()
+variable_iv_psi.calculate_variable_psi()
+variable_iv_psi.save_iv_psi()
 
 # Step 4: Train the base model
 model_trainer = ModelTrainer(X_train, X_val, Y_train, Y_val, X_test, Y_test, model_type='xgb')
@@ -53,7 +64,7 @@ model_trainer.train()
 
 # Step 6: Check model performance and decide the final model
 # Refer to modeling results in MODEL_RESULTS.csv file.
-final_model_name = 'xgb_231017_150511'
+final_model_name = 'xgb_231018_074317'
 with open(f'{model_path}/{final_model_name}.pkl', 'rb') as model_file:
     final_model = pickle.load(model_file)
 final_model_variables = pd.read_csv(f'{model_path}/{final_model_name}_importance.csv').VAR.tolist()
