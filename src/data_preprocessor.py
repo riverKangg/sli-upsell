@@ -14,8 +14,10 @@ class DataPreprocessor:
 
         if columns_to_keep:
             remain_cols = list(filter(lambda x: x not in train_data.columns, columns_to_keep))
-            if remain_cols:
+            if not remain_cols:
                 self.before_dum = True
+            else:
+                self.before_dum = False
         else:
             self.before_dum = False
         self.columns_to_keep = columns_to_keep
@@ -43,7 +45,7 @@ class DataPreprocessor:
             sys.exit()
 
     def _process_data(self, data):
-        data = data[self.columns_to_keep] if self.columns_to_keep and self.before_dum else data
+        data = data.loc[:,self.columns_to_keep] if self.columns_to_keep and self.before_dum else data
         data = data.drop(columns=data_keys)
         data = data.fillna(0)
 
@@ -54,7 +56,7 @@ class DataPreprocessor:
                 new_col = unidecode(col)
                 data = data.rename(columns={col: new_col})
 
-        data = data[self.columns_to_keep] if self.columns_to_keep and not self.before_dum else data
+        data = data.loc[:,self.columns_to_keep] if self.columns_to_keep and not self.before_dum else data
 
         return data
 
