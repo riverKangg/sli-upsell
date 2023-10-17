@@ -83,7 +83,7 @@ class ModelTrainer:
 
         results_df = pd.DataFrame({
             'Model': [self.model_name],
-            'NumOfCols': [self.X_train.shape[1]]
+            'NumOfCols': [self.X_train.shape[1]],
             'Validation ROC': [best_score],
             'Test ROC': [roc_score]
         })
