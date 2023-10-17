@@ -7,6 +7,7 @@ from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier, early_stopping
 from sklearn.metrics import roc_auc_score
 
+from utils.paths import data_path, model_path
 from src.data_preprocessor import DataPreprocessor
 from utils.hyperparameters import get_xgb_hyperparameters, get_lgb_hyperparameters
 from src.model_optimizer import ModelOptimizer
@@ -26,13 +27,12 @@ class ModelTrainer:
         save_name = f'{model_type}_{dt}'
         print(f'Model Version\t {save_name}')
 
-        result_path = './result/model'
-        if not os.path.exists(result_path):
-            os.makedirs(result_path)
-        self.path_bparams = f'{result_path}/{save_name}_bparams.csv'
-        self.path_model = f"{result_path}/{save_name}.pkl"
-        self.path_importance = f'{result_path}/{save_name}_importance.csv'
-        self.path_results = f'{result_path}/results.csv'
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+        self.path_bparams = f'{model_path}/{save_name}_bparams.csv'
+        self.path_model = f"{model_path}/{save_name}.pkl"
+        self.path_importance = f'{model_path}/{save_name}_importance.csv'
+        self.path_results = f'{model_path}/results.csv'
         self.model_name = save_name
 
         if model_type not in ['xgb', 'lgb']:
@@ -94,8 +94,8 @@ class ModelTrainer:
             results_df.to_csv(self.path_results, index=False)
 
 if __name__ == "__main__":
-    trainset = pd.read_csv('../data/sample_data_202211.csv')
-    testset = pd.read_csv('../data/sample_data_202304.csv')
+    trainset = pd.read_csv(f'{data_path}/sample_data_202211.csv')
+    testset = pd.read_csv(f'{data_path}/sample_data_202304.csv')
     dp = DataPreprocessor(trainset, testset)
     X_train, X_val, Y_train, Y_val, X_test, Y_test = dp.process_data()
     model_trainer = ModelTrainer(X_train, X_val, Y_train, Y_val, X_test, Y_test , model_type='xgb')
