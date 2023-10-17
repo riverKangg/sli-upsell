@@ -2,6 +2,7 @@ import pandas as pd
 import random
 import string
 import seaborn as sns
+from utils.paths import *
 
 class DataGenerator:
     def __init__(self, num_samples=1000, yyyymm='202304'):
@@ -40,12 +41,28 @@ class DataGenerator:
         titanic_df = self.load_titanic_data()
         self.df = self.df.join(titanic_df)
 
-    def save_data_to_csv(self, filepath='../data/'):
+    def save_data_to_csv(self, filepath=data_path):
         filename = f'{filepath}/sample_data_{self.yyyymm}.csv'
         self.df.to_csv(filename, index=False)
 
+    def save_scoring_data_to_csv(self, filepath=data_path):
+        self.df = self.df.drop(columns=['PERF'])
+        filename = f'{filepath}/score_data_{self.yyyymm}.csv'
+        self.df.to_csv(filename, index=False)
+
+
 if __name__ == "__main__":
+    data_generator = DataGenerator(num_samples=500, yyyymm='202211')
+    data_generator.generate_sample_data()
+    data_generator.join_titanic_data()
+    data_generator.save_data_to_csv()
+
     data_generator = DataGenerator(num_samples=500, yyyymm='202304')
     data_generator.generate_sample_data()
     data_generator.join_titanic_data()
     data_generator.save_data_to_csv()
+
+    data_generator = DataGenerator(num_samples=500, yyyymm='202306')
+    data_generator.generate_sample_data()
+    data_generator.join_titanic_data()
+    data_generator.save_scoring_data_to_csv()
