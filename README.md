@@ -8,13 +8,13 @@
 먼저 프로젝트를 클론한다.
 
 ```
-git clone https://github.com/yourusername/your-repo.git
+git clone https://github.com/riverKangg/sli-upsell.git
 ```
 
 그런 다음 프로젝트 디렉토리로 이동한다.
 
 ```
-cd your-repo
+cd sli-upsell
 ```
 
 다음으로 필요한 라이브러리 및 종속성을 설치한다.
