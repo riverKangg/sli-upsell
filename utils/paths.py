@@ -1,3 +1,3 @@
 data_path = '../data/'
-model_path = '../result/model/'
-score_path = '../result/score/'
+model_path = '../output/model/'
+score_path = '../output/score/'
