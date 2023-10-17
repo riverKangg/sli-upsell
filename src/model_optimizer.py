@@ -9,6 +9,17 @@ warnings.filterwarnings(action='ignore')
 
 class ModelOptimizer:
     def __init__(self, tr_x, val_x, tr_y, val_y, pbounds, model_type, n_iter=50):
+        """
+        Initialize the ModelOptimizer.
+
+        :param tr_x: Training data features.
+        :param val_x: Validation data features.
+        :param tr_y: Training data labels.
+        :param val_y: Validation data labels.
+        :param pbounds: Parameter bounds for Bayesian optimization.
+        :param model_type: The type of model ('xgb' or 'lgb').
+        :param n_iter: Number of iterations for optimization (default is 50).
+        """
         self.tr_x = tr_x
         self.tr_y = tr_y
         self.val_x = val_x
@@ -18,6 +29,11 @@ class ModelOptimizer:
         self.model_type = model_type
 
     def optimize(self):
+        """
+        Perform Bayesian optimization to find the best hyperparameters.
+
+        :return: The best AUC score and corresponding hyperparameters.
+        """
         def objective(**params):
             params = convert_params_to_int(params)
             if self.model_type == 'xgb':

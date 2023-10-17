@@ -10,6 +10,14 @@ warnings.filterwarnings(action='ignore')
 
 class DataPreprocessor:
     def __init__(self, train_data, test_data=None, target_col="PERF", columns_to_keep=None):
+        """
+        Initialize the DataPreprocessor.
+
+        :param train_data: The training dataset as a DataFrame.
+        :param test_data: The test dataset as a DataFrame (optional, only for development data preparation).
+        :param target_col: The target column name in the dataset.
+        :param columns_to_keep: A list of columns to keep in the dataset (optional).
+        """
         self.target_col = target_col
 
         if columns_to_keep:
@@ -37,6 +45,9 @@ class DataPreprocessor:
             sys.exit()
 
     def _check_column_matching(self):
+        """
+        Check if the columns in the training and test datasets match.
+        """
         if not self.is_dev_data:
             return
 
@@ -45,7 +56,13 @@ class DataPreprocessor:
             sys.exit()
 
     def _process_data(self, data):
-        data = data.loc[:,self.columns_to_keep] if self.columns_to_keep and self.before_dum else data
+        """
+        Preprocess the data, including handling missing values and one-hot encoding.
+
+        :param data: The input data as a DataFrame.
+        :return: Processed data as a DataFrame.
+        """
+        data = data.loc[:, self.columns_to_keep] if self.columns_to_keep and self.before_dum else data
         data = data.drop(columns=data_keys)
         data = data.fillna(0)
 
@@ -56,11 +73,16 @@ class DataPreprocessor:
                 new_col = unidecode(col)
                 data = data.rename(columns={col: new_col})
 
-        data = data.loc[:,self.columns_to_keep] if self.columns_to_keep and not self.before_dum else data
+        data = data.loc[:, self.columns_to_keep] if self.columns_to_keep and not self.before_dum else data
 
         return data
 
     def prepare_dev_data(self):
+        """
+        Prepare development data, splitting it into training and validation sets.
+
+        :return: X_train, X_val, Y_train, Y_val, X_test, Y_test
+        """
         self._check_column_matching()
 
         X_train, X_val, Y_train, Y_val = train_test_split(
@@ -80,16 +102,25 @@ class DataPreprocessor:
         return X_train, X_val, Y_train, Y_val, X_test, self.Y_test
 
     def prepare_scoring_data(self):
+        """
+        Prepare data for scoring, excluding the target column.
+
+        :return: Processed scoring data as a DataFrame.
+        """
         self._check_column_matching()
 
         return self._process_data(self.train_data)
 
     def process_data(self):
+        """
+        Process the data based on the context (development or scoring).
+
+        :return: Processed data based on the context.
+        """
         if self.is_dev_data:
             return self.prepare_dev_data()
         else:
             return self.prepare_scoring_data()
-
 
 if __name__ == "__main__":
     trainset = pd.read_csv('./data/sample_data_202211.csv')

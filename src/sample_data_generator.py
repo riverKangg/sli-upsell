@@ -6,22 +6,31 @@ from utils.paths import *
 
 class DataGenerator:
     def __init__(self, num_samples=1000, yyyymm='202304'):
+        """
+        Initialize the DataGenerator.
+
+        :param num_samples: The number of samples to generate.
+        :param yyyymm: The year and month (e.g., '202304').
+        """
         self.num_samples = num_samples
         self.yyyymm = yyyymm
         self.df = None
 
     def generate_sample_data(self):
-        # '계약자고객ID' 생성 (고유한 숫자)
+        """
+        Generate sample data with '마감년월', '계약자고객ID', and '계약자주민등록번호암호화'.
+        """
+        # Generate unique '계약자고객ID' (unique numbers)
         contract_ids = list(range(1, self.num_samples + 1))
 
-        # '주민등록번호암호화' 생성 (임의의 문자열)
+        # Generate '계약자주민등록번호암호화' (random strings)
         def random_string(length):
             letters = string.ascii_letters + string.digits
             return ''.join(random.choice(letters) for _ in range(length))
 
         encryption = [random_string(10) for _ in range(self.num_samples)]
 
-        # 데이터프레임 생성
+        # Create a DataFrame
         data = {
             '마감년월': self.yyyymm,
             '계약자고객ID': contract_ids,
@@ -31,6 +40,9 @@ class DataGenerator:
         self.df = pd.DataFrame(data)
 
     def load_titanic_data(self):
+        """
+        Load and preprocess Titanic dataset.
+        """
         titanic_df = sns.load_dataset('titanic')
         titanic_df = titanic_df.rename(columns={'survived': 'PERF'}).drop(columns=['alive'])
         titanic_df = titanic_df.sample(frac=1).reset_index(drop=True)
@@ -38,14 +50,27 @@ class DataGenerator:
         return titanic_df
 
     def join_titanic_data(self):
+        """
+        Join Titanic dataset with the generated data.
+        """
         titanic_df = self.load_titanic_data()
         self.df = self.df.join(titanic_df)
 
     def save_data_to_csv(self, filepath=data_path):
+        """
+        Save generated data to a CSV file.
+
+        :param filepath: The path to save the CSV file (default is data_path).
+        """
         filename = f'{filepath}/sample_data_{self.yyyymm}.csv'
         self.df.to_csv(filename, index=False)
 
     def save_scoring_data_to_csv(self, filepath=data_path):
+        """
+        Save the scoring data (without 'PERF') to a CSV file.
+
+        :param filepath: The path to save the CSV file (default is data_path).
+        """
         self.df = self.df.drop(columns=['PERF'])
         filename = f'{filepath}/sample_score_data_{self.yyyymm}.csv'
         self.df.to_csv(filename, index=False)

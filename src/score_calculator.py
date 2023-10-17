@@ -3,12 +3,20 @@ import pandas as pd
 import numpy as np
 import pickle
 from utils.keys import data_keys
-from utils.paths import data_path, model_path, score_path
+from utils.paths import *
 from src.data_preprocessor import DataPreprocessor
-
 
 class ScoreCalculator:
     def __init__(self, yyyymm, score_dataset, model, model_features, score_type='general'):
+        """
+        Initialize the ScoreCalculator.
+
+        :param yyyymm: A string representing the year and month for scoring (e.g., '202306').
+        :param score_dataset: The dataset used for scoring.
+        :param model: The pre-trained model for making predictions.
+        :param model_features: A list of model features used for scoring.
+        :param score_type: The type of scoring ('general' or 'single').
+        """
         if score_type not in ['general', 'single']:
             raise ValueError("Invalid score_type. Please use 'general' or 'single'.")
         self.yyyymm = yyyymm
@@ -21,6 +29,9 @@ class ScoreCalculator:
         self.score_type = score_type
 
     def compare_tables(self):
+        """
+        Compare and align the columns of data_for_scoring with the model features.
+        """
         base_cols = set(self.model_features)
         compare_cols = set(self.data_for_scoring.columns.tolist())
         missing_cols = base_cols - compare_cols
@@ -29,9 +40,19 @@ class ScoreCalculator:
         self.data_for_scoring = self.data_for_scoring[self.model_features]
 
     def get_score_df(self):
+        """
+        Calculate the probability of the model's predictions.
+        """
         self.y_prob_df = pd.DataFrame(self.model.predict_proba(self.data_for_scoring)[:, 1], columns=['probability'])
 
     def score_transform(self, base_score=600, pdo=40, base_odds=1):
+        """
+        Transform the probabilities into scores using specified parameters.
+
+        :param base_score: The base score for transformation.
+        :param pdo: The points to double the odds (PDO).
+        :param base_odds: The base odds.
+        """
         self.y_prob_df['log_odds'] = np.log(self.y_prob_df['probability'] / (1 - self.y_prob_df['probability']))
         pdo_log_odds = pdo / np.log(2)
         self.y_prob_df['score'] = round(base_score + pdo_log_odds * self.y_prob_df['log_odds'], 0)
@@ -39,6 +60,9 @@ class ScoreCalculator:
         del self.y_prob_df
 
     def get_score_and_grade(self):
+        """
+        Calculate scores, apply grade thresholds, and calculate statistics.
+        """
         self.compare_tables()
         self.get_score_df()
         self.score_transform()
@@ -77,11 +101,13 @@ class ScoreCalculator:
         return self.y_pred_df
 
     def save_score_df(self):
+        """
+        Save the scored data to a CSV file.
+        """
         if not os.path.exists(score_path):
             os.makedirs(score_path)
         score_data = self.data_keys.join(self.y_pred_df).set_index(data_keys)
         score_data.reset_index().to_csv(f"{score_path}/SCORE_{self.score_type}_{self.yyyymm}.csv", index=False)
-
 
 if __name__ == "__main__":
     final_model_name = 'xgb_231017_150511'
