@@ -2,7 +2,7 @@ import pickle
 import glob
 import pandas as pd
 
-from utils.paths import *
+from utils import *
 from src.model_trainer import ModelTrainer
 from src.data_validator import DataValidator
 from src.model_evaluator import ModelEvaluator

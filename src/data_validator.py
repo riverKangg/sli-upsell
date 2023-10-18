@@ -1,6 +1,5 @@
 import pandas as pd
-from utils.keys import data_keys
-from utils.paths import *
+from utils import *
 
 class DataValidator:
     def __init__(self, df):

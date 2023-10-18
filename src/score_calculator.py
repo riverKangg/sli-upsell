@@ -1,9 +1,9 @@
 import os
-import pandas as pd
-import numpy as np
 import pickle
-from utils.keys import data_keys
-from utils.paths import *
+import numpy as np
+import pandas as pd
+
+from utils import *
 from src.data_preprocessor import DataPreprocessor
 
 class ScoreCalculator:

@@ -7,9 +7,8 @@ from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier, early_stopping
 from sklearn.metrics import roc_auc_score
 
-from utils.paths import data_path, model_path
+from utils import *
 from src.data_preprocessor import DataPreprocessor
-from utils.hyperparameters import get_xgb_hyperparameters, get_lgb_hyperparameters
 from src.model_optimizer import ModelOptimizer
 
 warnings.filterwarnings(action='ignore')

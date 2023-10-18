@@ -1,8 +1,9 @@
 import pickle
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sklearn.metrics import roc_auc_score
-from utils.paths import *
+
+from utils import *
 from src.data_preprocessor import DataPreprocessor
 
 

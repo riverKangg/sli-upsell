@@ -4,9 +4,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-from utils.paths import *
-from utils.keys import data_keys
-from src.data_preprocessor import DataPreprocessor
+from utils import *
 
 warnings.filterwarnings(action='ignore')
 

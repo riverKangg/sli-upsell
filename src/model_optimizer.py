@@ -1,9 +1,10 @@
 import warnings
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier, early_stopping
 from sklearn.metrics import roc_auc_score
+from lightgbm import LGBMClassifier, early_stopping
 from bayes_opt import BayesianOptimization, UtilityFunction
-from utils.hyperparameters import convert_params_to_int
+
+from utils import *
 
 warnings.filterwarnings(action='ignore')
 

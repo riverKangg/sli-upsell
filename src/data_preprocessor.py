@@ -3,8 +3,7 @@ import warnings
 import pandas as pd
 from unidecode import unidecode
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from utils.keys import data_keys
+from utils import *
 
 warnings.filterwarnings(action='ignore')
 

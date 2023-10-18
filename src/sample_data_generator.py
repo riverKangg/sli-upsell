@@ -1,8 +1,10 @@
-import pandas as pd
+import os
 import random
 import string
+import pandas as pd
 import seaborn as sns
-from utils.paths import *
+
+from utils import *
 
 class DataGenerator:
     def __init__(self, num_samples=1000, yyyymm='202304'):
@@ -21,7 +23,7 @@ class DataGenerator:
         Generate sample data with '마감년월', '계약자고객ID', and '계약자주민등록번호암호화'.
         """
         # Generate unique '계약자고객ID' (unique numbers)
-        contract_ids = list(range(1, self.num_samples + 1))
+        customer_ids = list(range(1, self.num_samples + 1))
 
         # Generate '계약자주민등록번호암호화' (random strings)
         def random_string(length):
@@ -33,7 +35,7 @@ class DataGenerator:
         # Create a DataFrame
         data = {
             '마감년월': self.yyyymm,
-            '계약자고객ID': contract_ids,
+            '계약자고객ID': customer_ids,
             '계약자주민등록번호암호화': encryption,
         }
 
@@ -63,6 +65,8 @@ class DataGenerator:
 
         :param filepath: The path to save the CSV file (default is data_path).
         """
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
         filename = f'{filepath}/sample_data_{self.yyyymm}.csv'
         self.df.to_csv(filename, index=False)
 
@@ -73,6 +77,8 @@ class DataGenerator:
         :param filepath: The path to save the CSV file (default is data_path).
         """
         self.df = self.df.drop(columns=['PERF'])
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
         filename = f'{filepath}/sample_score_data_{self.yyyymm}.csv'
         self.df.to_csv(filename, index=False)
 
